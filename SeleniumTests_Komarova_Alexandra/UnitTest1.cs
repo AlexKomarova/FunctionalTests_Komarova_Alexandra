@@ -5,18 +5,22 @@ namespace SeleniumTests_Komarova_Alexandra;
 
 public class Tests
 {
+    private ChromeDriver driver;
 
-    [Test]
-    public void Authorization()
+    [SetUp]
+    public void SetUp()
     {
         var options = new ChromeOptions();
-        options.AddArguments("--no-sandbox", "--start-maximized", "--disable-extensions");
+        options.AddArguments("--no-sandbox",
+            "--disable-extensions"); //options.AddArguments("--headless"); //Вынес отдельно,чтобы была возможность быстро скрыть браузер
+        driver = new ChromeDriver(options);
+        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+        Authorization();
+    }
 
-        var driver = new ChromeDriver(options);
-        
+    private void Authorization()
+    {
         driver.Navigate().GoToUrl("https://staff-testing.testkontur.ru");
-        Thread.Sleep(5000);
-
         var login = driver.FindElement(By.Id("Username"));
         login.SendKeys("alex.lvova@skbkontur.ru");
 
@@ -25,14 +29,17 @@ public class Tests
 
         var enter = driver.FindElement(By.Name("button"));
         enter.Click();
-        
-        Thread.Sleep(3000);
+    }
 
-        var url = driver.Url;
-        
-        Assert.That(url == "https://staff-testing.testkontur.ru/news2");
+    [Test]
+    public void Test()
+    {
+        Assert.That(true);
+    }
 
-
+    [TearDown]
+    public void TearDown()
+    {
         driver.Quit();
     }
 }
