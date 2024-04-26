@@ -1,5 +1,6 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using Shouldly;
 
 namespace SeleniumTests_Komarova_Alexandra;
 
@@ -11,8 +12,7 @@ public class Tests
     public void SetUp()
     {
         var options = new ChromeOptions();
-        options.AddArguments("--no-sandbox",
-            "--disable-extensions"); //options.AddArguments("--headless"); //Вынес отдельно,чтобы была возможность быстро скрыть браузер
+        options.AddArguments("--no-sandbox", "--disable-extensions", "--start-fullscreen");
         driver = new ChromeDriver(options);
         driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
         Authorization();
@@ -29,17 +29,53 @@ public class Tests
 
         var enter = driver.FindElement(By.Name("button"));
         enter.Click();
+        driver.FindElement(By.CssSelector("[data-tid='Title']"));
     }
 
     [Test]
-    public void Test()
+    public void КликаемПоЛоготипу_ПерешлиНаГлавную()
     {
-        Assert.That(true);
+        driver.Navigate().GoToUrl("https://staff-testing.testkontur.ru/communities");
+
+        var logo = driver.FindElement(By.TagName("header")).FindElement(By.TagName("img"));
+        logo.Click();
+        
+        driver.Url.ShouldBe("https://staff-testing.testkontur.ru/",
+            "Кликнули по логотипу и не перешли на главную");
+    }
+
+    [Test]
+    public void СГлавнойРедиректит_НаНовости()
+    {
+        driver.Navigate().GoToUrl("https://staff-testing.testkontur.ru");
+        var title = driver.FindElement(By.CssSelector("[data-tid='Title']"));
+        
+        title.Text.ShouldBe("Новости", "Не средиректило на страницу новостей");
+    }
+
+    [Test]
+    public void РедактируемДополнительныйEmail_УспешноОбновился()
+    {
+        driver.Navigate().GoToUrl("https://staff-testing.testkontur.ru/profile/settings/edit");
+        var input = driver.FindElement(By.CssSelector("[data-tid='AdditionalEmail'] input"));
+        
+        input.SendKeys(Keys.Control + "a");
+        input.SendKeys(Keys.Backspace);
+        const string newEmail = "new@email.ru";
+        input.SendKeys(newEmail);
+        input.SendKeys(Keys.PageUp);
+        
+        var saveButton = driver.FindElement(By.CssSelector("[data-tid='PageHeader'] button"));
+        saveButton.Click();
+        var extraEmail = driver.FindElements(By.CssSelector("[data-tid='ContactCard'] a")).ToArray()[2];
+        
+        extraEmail.Text.ShouldBe(newEmail);
     }
 
     [TearDown]
     public void TearDown()
     {
+        driver.Close();
         driver.Quit();
     }
 }
