@@ -64,12 +64,54 @@ public class Tests
         const string newEmail = "new@email.ru";
         input.SendKeys(newEmail);
         input.SendKeys(Keys.PageUp);
+        input.SendKeys(Keys.PageUp);
         
         var saveButton = driver.FindElement(By.CssSelector("[data-tid='PageHeader'] button"));
         saveButton.Click();
         var extraEmail = driver.FindElements(By.CssSelector("[data-tid='ContactCard'] a")).ToArray()[2];
         
-        extraEmail.Text.ShouldBe(newEmail);
+        extraEmail.Text.ShouldBe(newEmail, "Дополнительный Email не обновился");
+    }
+
+    [Test]
+    public void РедактируемДополнительныйEmail_ОтменилиРедактирование()
+    {
+        driver.Navigate().GoToUrl("https://staff-testing.testkontur.ru/profile/settings/edit");
+        var input = driver.FindElement(By.CssSelector("[data-tid='AdditionalEmail'] input"));
+
+        input.SendKeys(Keys.Control + "a");
+        input.SendKeys(Keys.Backspace);
+        const string newEmail = "defolt@email.ru";
+        input.SendKeys(newEmail);
+        input.SendKeys(Keys.PageUp);
+        input.SendKeys(Keys.PageUp);
+
+        var canselButton = driver.FindElements(By.CssSelector("[data-tid='PageHeader'] button"))[1];
+        canselButton.Click();
+        var extraEmail = driver.FindElements(By.CssSelector("[data-tid='ContactCard'] a")).ToArray()[2];
+
+        extraEmail.Text.ShouldNotBe(newEmail, "Дополнительный Email обновился");
+    }
+
+    [Test]
+    public void РедактируемРабочийТелефон_УспешноОбновился()
+    {
+        driver.Navigate().GoToUrl("https://staff-testing.testkontur.ru/profile/settings/edit");
+        var input = driver.FindElement(By.CssSelector("[data-tid='WorkPhone'] input"));
+        
+        input.SendKeys(Keys.Control + "a");
+        input.SendKeys(Keys.Backspace);
+        const string newPhone = "+73431213123";
+        input.SendKeys(newPhone);
+        input.SendKeys(Keys.PageUp);
+        input.SendKeys(Keys.PageUp);
+        
+        var saveButton = driver.FindElement(By.CssSelector("[data-tid='PageHeader'] button"));
+        saveButton.Click();
+        var workPhone = driver.FindElements(By.CssSelector("[data-tid='ContactCard'] div")).Select(x => x.Text).ToArray();
+
+        workPhone.ShouldContain(newPhone, "Рабочий телефон не обновился");
+
     }
 
     [TearDown]
